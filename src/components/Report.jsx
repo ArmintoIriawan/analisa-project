@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { Search, Eye, Trash2, X } from 'lucide-react';
+import { Search, Eye, Trash2, X, Download } from 'lucide-react';
 
 const Report = ({ entries, deleteEntry }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,6 +9,18 @@ const Report = ({ entries, deleteEntry }) => {
   const filteredEntries = entries.filter((entry) => 
     entry.content.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const downloadMarkdown = (entry) => {
+    const filename = `analysis_report_${format(new Date(entry.timestamp), 'yyyyMMdd_HHmmss')}.md`;
+    const blob = new Blob([entry.content], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="w-full flex flex-col h-full animate-in fade-in duration-500">
@@ -67,6 +79,13 @@ const Report = ({ entries, deleteEntry }) => {
                   {/* Actions */}
                   <div className="col-span-3 lg:col-span-2 flex items-center justify-end gap-3 lg:opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
+                      onClick={() => downloadMarkdown(entry)}
+                      className="p-2 text-gray-400 hover:text-green-500 transition-colors rounded hover:bg-green-500/10"
+                      title="Download MD"
+                    >
+                      <Download className="w-5 h-5" />
+                    </button>
+                    <button 
                       onClick={() => setSelectedEntry(entry)}
                       className="p-2 text-gray-400 hover:text-electric-blue transition-colors rounded hover:bg-electric-blue/10"
                       title="View Record"
@@ -93,12 +112,22 @@ const Report = ({ entries, deleteEntry }) => {
       {selectedEntry && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 lg:p-10 bg-black/80 backdrop-blur-sm">
           <div className="glass-panel w-full max-w-4xl max-h-[90vh] rounded-2xl flex flex-col relative animate-in fade-in zoom-in duration-300">
-            <button 
-              onClick={() => setSelectedEntry(null)}
-              className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            <div className="absolute top-4 right-4 flex items-center gap-2">
+              <button 
+                onClick={() => downloadMarkdown(selectedEntry)}
+                className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-500/10 rounded-full transition-colors"
+                title="Download MD"
+              >
+                <Download className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={() => setSelectedEntry(null)}
+                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                title="Close"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
             <div className="p-6 lg:p-8 border-b border-charcoal-border bg-black/20 text-electric-blue font-mono font-bold tracking-widest flex items-center gap-3">
                <span className="block w-2 h-2 bg-electric-blue rounded-full animate-pulse text-transparent">~</span>
                SYSTEM LOG VISUALIZATION
